@@ -1,6 +1,6 @@
 # Todo app
 Frontend :
-  <img width="2840" height="2012" alt="image" src="https://github.com/user-attachments/assets/8211141d-5f44-4fd2-9a5c-e7baf1ce91a9" />
+  <img width="1637" height="992" alt="image" src="https://github.com/user-attachments/assets/edbb6bbd-f5c9-4e46-a699-43f1a0b5ca1b" />
 
 Backend :
   <img width="3745" height="1870" alt="image" src="https://github.com/user-attachments/assets/271eff50-d1f9-477d-b445-0730b7ab8964" />
