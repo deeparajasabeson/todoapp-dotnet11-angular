@@ -1,0 +1,87 @@
+@TodoApi_HostAddress = http://localhost:5062
+
+### Health check
+GET {{TodoApi_HostAddress}}/health
+Accept: application/json
+
+### OpenAPI document
+GET {{TodoApi_HostAddress}}/openapi/v1.json
+
+### List everything (first page)
+GET {{TodoApi_HostAddress}}/api/todos
+Accept: application/json
+
+### Most urgent open work first
+GET {{TodoApi_HostAddress}}/api/todos?status=Pending&sortBy=Priority&descending=true
+Accept: application/json
+
+### High and Critical only
+GET {{TodoApi_HostAddress}}/api/todos?minPriority=High
+Accept: application/json
+
+### Overdue items, soonest due date first
+GET {{TodoApi_HostAddress}}/api/todos?isOverdue=true&sortBy=DueDate
+Accept: application/json
+
+### Free-text search with paging
+GET {{TodoApi_HostAddress}}/api/todos?search=domain&page=1&pageSize=10
+Accept: application/json
+
+### Create
+# @name createTodo
+POST {{TodoApi_HostAddress}}/api/todos
+Content-Type: application/json
+
+{
+  "title": "Write integration tests",
+  "description": "Cover the status and priority transitions.",
+  "status": "Pending",
+  "priority": "High",
+  "dueDate": "2026-09-30T17:00:00Z"
+}
+
+@todoId = {{createTodo.response.body.id}}
+
+### Get one
+GET {{TodoApi_HostAddress}}/api/todos/{{todoId}}
+Accept: application/json
+
+### Replace
+PUT {{TodoApi_HostAddress}}/api/todos/{{todoId}}
+Content-Type: application/json
+
+{
+  "title": "Write integration tests",
+  "description": "Cover filtering too.",
+  "status": "InProgress",
+  "priority": "Critical",
+  "dueDate": "2026-10-02T17:00:00Z"
+}
+
+### Change status only
+PATCH {{TodoApi_HostAddress}}/api/todos/{{todoId}}/status
+Content-Type: application/json
+
+{
+  "status": "Completed"
+}
+
+### Change priority only
+PATCH {{TodoApi_HostAddress}}/api/todos/{{todoId}}/priority
+Content-Type: application/json
+
+{
+  "priority": "Low"
+}
+
+### Delete
+DELETE {{TodoApi_HostAddress}}/api/todos/{{todoId}}
+
+### Validation failure (empty title -> 400 with problem details)
+POST {{TodoApi_HostAddress}}/api/todos
+Content-Type: application/json
+
+{
+  "title": "",
+  "priority": "High"
+}

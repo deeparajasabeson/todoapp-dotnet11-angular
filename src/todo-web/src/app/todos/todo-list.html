@@ -1,0 +1,278 @@
+<section class="toolbar">
+  <div class="search">
+    <input
+      type="search"
+      placeholder="Search title and description"
+      aria-label="Search to-do items"
+      [value]="searchText()"
+      (input)="onSearch($any($event.target).value)"
+    />
+  </div>
+
+  <label class="field">
+    <span>Status</span>
+    <select [value]="filters().status" (change)="setStatusFilter($any($event.target).value)">
+      <option value="">All</option>
+      @for (status of statuses; track status) {
+        <option [value]="status">{{ status }}</option>
+      }
+    </select>
+  </label>
+
+  <label class="field">
+    <span>Min priority</span>
+    <select [value]="filters().minPriority" (change)="setMinPriorityFilter($any($event.target).value)">
+      <option value="">Any</option>
+      @for (priority of priorities; track priority) {
+        <option [value]="priority">{{ priority }}</option>
+      }
+    </select>
+  </label>
+
+  <label class="field">
+    <span>Sort by</span>
+    <select [value]="filters().sortBy" (change)="setSort($any($event.target).value)">
+      @for (field of sortFields; track field) {
+        <option [value]="field">{{ field }}</option>
+      }
+    </select>
+  </label>
+
+  <button
+    type="button"
+    class="ghost direction"
+    (click)="toggleDirection()"
+    [attr.aria-label]="filters().descending ? 'Sort ascending' : 'Sort descending'"
+  >
+    {{ filters().descending ? '↓ Desc' : '↑ Asc' }}
+  </button>
+
+  <label class="checkbox">
+    <input
+      type="checkbox"
+      [checked]="filters().overdueOnly"
+      (change)="toggleOverdue($any($event.target).checked)"
+    />
+    <span>Overdue only</span>
+  </label>
+
+  @if (hasActiveFilters()) {
+    <button type="button" class="ghost" (click)="clearFilters()">Clear</button>
+  }
+
+  <button type="button" class="primary new" (click)="toggleComposer()">
+    {{ composerOpen() ? 'Cancel' : '+ New todo' }}
+  </button>
+</section>
+
+@if (composerOpen()) {
+  <form class="composer" (submit)="$event.preventDefault(); createTodo()">
+    <input
+      class="title-input"
+      type="text"
+      placeholder="What needs doing?"
+      aria-label="Title"
+      required
+      maxlength="200"
+      autofocus
+      [value]="draft().title"
+      (input)="patchDraft({ title: $any($event.target).value })"
+    />
+    <textarea
+      placeholder="Notes (optional)"
+      aria-label="Description"
+      rows="2"
+      maxlength="2000"
+      [value]="draft().description"
+      (input)="patchDraft({ description: $any($event.target).value })"
+    ></textarea>
+
+    <div class="composer-row">
+      <label class="field">
+        <span>Status</span>
+        <select [value]="draft().status" (change)="patchDraft({ status: $any($event.target).value })">
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ status }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Priority</span>
+        <select
+          [value]="draft().priority"
+          (change)="patchDraft({ priority: $any($event.target).value })"
+        >
+          @for (priority of priorities; track priority) {
+            <option [value]="priority">{{ priority }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Due</span>
+        <input
+          type="datetime-local"
+          [value]="draft().dueDate"
+          (input)="patchDraft({ dueDate: $any($event.target).value })"
+        />
+      </label>
+
+      <button type="submit" class="primary" [disabled]="!draft().title.trim() || saving()">
+        {{ saving() ? 'Saving…' : 'Add todo' }}
+      </button>
+    </div>
+  </form>
+}
+
+@if (loadError(); as message) {
+  <p class="banner error">{{ message }}</p>
+}
+@if (actionError(); as message) {
+  <p class="banner error">{{ message }}</p>
+}
+
+<section class="summary">
+  <span><strong>{{ pageInfo().totalCount }}</strong> matching</span>
+  <span><strong>{{ openCount() }}</strong> open on this page</span>
+  @if (overdueCount() > 0) {
+    <span class="overdue-count"><strong>{{ overdueCount() }}</strong> overdue</span>
+  }
+  @if (loading()) {
+    <span class="loading">Loading…</span>
+  }
+</section>
+
+<ul class="todo-list">
+  @for (todo of todos(); track todo.id) {
+    <li class="todo" [class.done]="todo.status === 'Completed'" [class.dropped]="todo.status === 'Cancelled'">
+      @if (editingId() === todo.id) {
+        <form class="edit" (submit)="$event.preventDefault(); saveEdit(todo.id)">
+          <input
+            class="title-input"
+            type="text"
+            aria-label="Title"
+            required
+            maxlength="200"
+            [value]="editDraft().title"
+            (input)="patchEditDraft({ title: $any($event.target).value })"
+          />
+          <textarea
+            aria-label="Description"
+            rows="2"
+            maxlength="2000"
+            [value]="editDraft().description"
+            (input)="patchEditDraft({ description: $any($event.target).value })"
+          ></textarea>
+          <div class="composer-row">
+            <label class="field">
+              <span>Status</span>
+              <select
+                [value]="editDraft().status"
+                (change)="patchEditDraft({ status: $any($event.target).value })"
+              >
+                @for (status of statuses; track status) {
+                  <option [value]="status">{{ status }}</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Priority</span>
+              <select
+                [value]="editDraft().priority"
+                (change)="patchEditDraft({ priority: $any($event.target).value })"
+              >
+                @for (priority of priorities; track priority) {
+                  <option [value]="priority">{{ priority }}</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Due</span>
+              <input
+                type="datetime-local"
+                [value]="editDraft().dueDate"
+                (input)="patchEditDraft({ dueDate: $any($event.target).value })"
+              />
+            </label>
+            <button type="submit" class="primary" [disabled]="saving()">Save</button>
+            <button type="button" class="ghost" (click)="cancelEdit()">Cancel</button>
+          </div>
+        </form>
+      } @else {
+        <input
+          class="check"
+          type="checkbox"
+          [checked]="todo.status === 'Completed'"
+          [attr.aria-label]="'Mark ' + todo.title + ' complete'"
+          (change)="toggleComplete(todo)"
+        />
+
+        <div class="body">
+          <p class="title">{{ todo.title }}</p>
+          @if (todo.description) {
+            <p class="description">{{ todo.description }}</p>
+          }
+          <div class="meta">
+            <span class="badge priority-{{ todo.priority.toLowerCase() }}">{{ todo.priority }}</span>
+            <span class="badge status-{{ todo.status.toLowerCase() }}">{{ todo.status }}</span>
+            @if (todo.dueDate) {
+              <span class="due" [class.is-overdue]="todo.isOverdue">
+                {{ todo.isOverdue ? 'Overdue' : 'Due' }} {{ todo.dueDate | date: 'MMM d, y, h:mm a' }}
+              </span>
+            }
+            @if (todo.completedAt) {
+              <span class="completed">Completed {{ todo.completedAt | date: 'MMM d' }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="actions">
+          <select
+            [value]="todo.status"
+            [attr.aria-label]="'Status of ' + todo.title"
+            (change)="setStatus(todo, $any($event.target).value)"
+          >
+            @for (status of statuses; track status) {
+              <option [value]="status">{{ status }}</option>
+            }
+          </select>
+          <select
+            [value]="todo.priority"
+            [attr.aria-label]="'Priority of ' + todo.title"
+            (change)="setPriority(todo, $any($event.target).value)"
+          >
+            @for (priority of priorities; track priority) {
+              <option [value]="priority">{{ priority }}</option>
+            }
+          </select>
+          <button type="button" class="ghost" (click)="startEdit(todo)">Edit</button>
+          <button type="button" class="ghost danger" (click)="remove(todo)">Delete</button>
+        </div>
+      }
+    </li>
+  } @empty {
+    @if (!loading()) {
+      <li class="empty">
+        @if (hasActiveFilters()) {
+          Nothing matches these filters.
+          <button type="button" class="link" (click)="clearFilters()">Clear them</button>
+        } @else {
+          No to-do items yet. Add the first one.
+        }
+      </li>
+    }
+  }
+</ul>
+
+@if (pageInfo().totalPages > 1) {
+  <nav class="paging">
+    <button type="button" class="ghost" [disabled]="!pageInfo().hasPreviousPage" (click)="changePage(-1)">
+      ← Previous
+    </button>
+    <span>Page {{ pageInfo().page }} of {{ pageInfo().totalPages }}</span>
+    <button type="button" class="ghost" [disabled]="!pageInfo().hasNextPage" (click)="changePage(1)">
+      Next →
+    </button>
+  </nav>
+}

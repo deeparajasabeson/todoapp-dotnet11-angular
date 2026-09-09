@@ -1,0 +1,188 @@
+/* Design tokens and shared element styles. Component-scoped rules that only
+   concern the list itself live in todo-list.css. */
+:root {
+  color-scheme: light dark;
+
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #dfe3e8;
+  --text: #16191d;
+  --text-muted: #626b76;
+  --accent: #2f6feb;
+  --accent-text: #ffffff;
+  --danger: #c02b2b;
+
+  --low: #6b7280;
+  --medium: #2f6feb;
+  --high: #b45309;
+  --critical: #c02b2b;
+
+  --radius: 8px;
+  --shadow: 0 1px 2px rgb(16 24 40 / 6%), 0 1px 3px rgb(16 24 40 / 8%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171a;
+    --surface: #1c2024;
+    --surface-2: #23282e;
+    --border: #333a42;
+    --text: #e8eaed;
+    --text-muted: #9aa4b0;
+    --accent: #6ea0ff;
+    --accent-text: #10131a;
+    --danger: #ff6b6b;
+
+    --low: #9aa4b0;
+    --medium: #6ea0ff;
+    --high: #e0a25e;
+    --critical: #ff6b6b;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font:
+    15px/1.5 system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+input[type='text'],
+input[type='search'],
+input[type='datetime-local'],
+select,
+textarea {
+  padding: 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  min-width: 0;
+}
+
+textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+button {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+button.ghost:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+button.danger {
+  color: var(--danger);
+  border-color: transparent;
+}
+
+button.link {
+  border: none;
+  background: none;
+  color: var(--accent);
+  padding: 0 2px;
+  text-decoration: underline;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid currentcolor;
+}
+
+.priority-low {
+  color: var(--low);
+}
+.priority-medium {
+  color: var(--medium);
+}
+.priority-high {
+  color: var(--high);
+}
+.priority-critical {
+  color: var(--critical);
+}
+
+.status-pending,
+.status-cancelled {
+  color: var(--text-muted);
+}
+.status-inprogress {
+  color: var(--accent);
+}
+.status-completed {
+  color: #2e7d4f;
+}
+
+.banner {
+  margin: 0 0 12px;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, transparent);
+}
