@@ -1,9 +1,16 @@
 using System.Text.Json.Serialization;
+using System.ClientModel;
+using Azure.AI.OpenAI;
+using FluentValidation;
+using Microsoft.Extensions.AI;
 using Microsoft.OpenApi;
 using Microsoft.EntityFrameworkCore;
+using TodoApi.Agents;
 using TodoApi.Data;
 using TodoApi.Endpoints;
 using TodoApi.Infrastructure;
+using TodoApi.Services;
+using TodoApi.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +36,43 @@ builder.Services.AddCors(options => options.AddPolicy(SpaCors, policy => policy
     .WithOrigins(builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [])
     .AllowAnyHeader()
     .AllowAnyMethod()));
+
+builder.Services.AddScoped<TodoService>();
+
+// Azure AI Foundry. Endpoint and key come from user secrets or the environment; the app
+// starts and serves the REST API normally when they are absent, and only the chat
+// endpoint reports itself unavailable.
+builder.Services.Configure<AiOptions>(builder.Configuration.GetSection(AiOptions.SectionName));
+
+var ai = builder.Configuration.GetSection(AiOptions.SectionName).Get<AiOptions>() ?? new AiOptions();
+
+if (ai.IsConfigured)
+{
+    var foundry = new AzureOpenAIClient(new Uri(ai.Endpoint!), new ApiKeyCredential(ai.ApiKey!));
+
+    builder.Services.AddSingleton<IChatClient>(_ => foundry
+        .GetChatClient(ai.ChatDeployment)
+        .AsIChatClient()
+        .AsBuilder()
+        .UseFunctionInvocation()
+        .Build());
+
+    builder.Services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>>(_ => foundry
+        .GetEmbeddingClient(ai.EmbeddingDeployment)
+        .AsIEmbeddingGenerator());
+
+    builder.Services.AddSingleton<KnowledgeBase>();
+    builder.Services.AddSingleton<ConversationStore>();
+    builder.Services.AddScoped<TodoAgentTeam>();
+}
+else
+{
+    builder.Services.AddSingleton<ConversationStore>();
+}
+
+// Request-body validation. The rules live in Validators/; routes opt in with
+// .WithValidation<T>(), which runs them in an endpoint filter before the handler.
+builder.Services.AddValidatorsFromAssemblyContaining<CreateTodoRequestValidator>();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<BadRequestExceptionHandler>();
@@ -83,5 +127,6 @@ app.MapGet("/", () => Results.Redirect(app.Environment.IsDevelopment() ? "/swagg
 app.MapGet("/health", () => TypedResults.Ok(new { status = "healthy" })).WithTags("System");
 
 app.MapTodoEndpoints();
+app.MapChatEndpoints();
 
 app.Run();

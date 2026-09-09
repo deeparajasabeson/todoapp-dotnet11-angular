@@ -85,3 +85,22 @@ Content-Type: application/json
   "title": "",
   "priority": "High"
 }
+
+### Validation: multiple broken rules at once -> 400 with an errors map
+POST {{TodoApi_HostAddress}}/api/todos
+Content-Type: application/json
+
+{
+  "title": "   ",
+  "status": 42,
+  "priority": 99
+}
+
+### Validation: unknown enum name -> 400 from the body parser (detail, not errors)
+POST {{TodoApi_HostAddress}}/api/todos
+Content-Type: application/json
+
+{
+  "title": "Valid title",
+  "priority": "Urgent"
+}

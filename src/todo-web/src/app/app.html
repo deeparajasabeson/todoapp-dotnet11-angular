@@ -1,8 +1,14 @@
 <header class="app-header">
   <h1>Todos</h1>
-  <p>ASP.NET Core minimal API on .NET 10, SQL Server, Angular 22.</p>
+  <p>ASP.NET Core minimal API on .NET 10, SQL Server, Angular 22, Azure AI Foundry agents.</p>
 </header>
 
-<main>
-  <router-outlet />
-</main>
+<div class="workspace">
+  <main class="list-pane">
+    <router-outlet />
+  </main>
+
+  <aside class="chat-pane" aria-label="Assistant">
+    <app-chat-panel />
+  </aside>
+</div>

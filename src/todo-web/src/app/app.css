@@ -1,22 +1,75 @@
 :host {
   display: block;
-  max-width: 900px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 28px 20px 56px;
+  padding: 24px 20px 32px;
 }
 
 .app-header {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .app-header h1 {
   margin: 0;
-  font-size: 26px;
-  letter-spacing: -0.01em;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(100deg, var(--critical), var(--accent) 45%, var(--inprogress));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* Falls back to a solid colour where background-clip: text is unsupported. */
+  width: fit-content;
+}
+
+.app-header::after {
+  content: '';
+  display: block;
+  height: 4px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--low),
+    var(--medium) 30%,
+    var(--high) 60%,
+    var(--critical)
+  );
 }
 
 .app-header p {
   margin: 4px 0 0;
   color: var(--text-muted);
   font-size: 13px;
+}
+
+/* Two thirds list, one third assistant. The chat pane sticks to the viewport and
+   scrolls internally so the transcript stays reachable however long the list gets. */
+.workspace {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.list-pane {
+  min-width: 0;
+}
+
+.chat-pane {
+  position: sticky;
+  top: 24px;
+  height: calc(100vh - 80px);
+  min-height: 420px;
+}
+
+@media (max-width: 1000px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-pane {
+    position: static;
+    height: 70vh;
+  }
 }

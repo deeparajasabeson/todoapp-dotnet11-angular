@@ -1,34 +1,15 @@
 # Todo app
+![Front End Home Page at http://localhost:4200](image.png)
+A to-do list with an **ASP.NET Core minimal API on .NET 10** backed by SQL Server, an
+**Angular 22** front end, and a **multi-agent assistant** built on the Microsoft Agent
+Framework against **Azure AI Foundry**. Items carry a **status** and a **priority**, and the
+list filters, sorts and pages on both.
 
-A to-do list with an **ASP.NET Core minimal API on .NET 10** backed by SQL Server, and an
-**Angular 22** front end. Items carry a **status** and a **priority**, and the list filters,
-sorts and pages on both.
+The home screen is the list on the left two thirds and the assistant on the right third.
+Anything you can do by clicking, you can also ask for in plain English.
 
-The SDK is pinned to 10.0.302 in `global.json`, so a newer .NET 11 preview SDK on the same
-machine is ignored for this solution.
-
-## Prerequisites
-
-- **.NET SDK 10.0.302** (or a later 10.0.3xx feature band - `global.json` rolls forward
-  within the band). Check with `dotnet --list-sdks`.
-- **Node.js** `^22.22.3 || ^24.15.0 || >=26.0.0`, as required by Angular 22. Check with
-  `node --version`.
-- **SQL Server** reachable at `localhost` as a default instance, with Windows authentication
-  for the account running the API. Built against SQL Server 2025 Developer/Enterprise
-  Evaluation; any recent edition, including Express, works.
-- **`dotnet-ef`**, once per machine:
-  `dotnet tool install --global dotnet-ef --version 10.0.12`
-
-## First run
-
-```bash
-dotnet ef database update --project src/TodoApi
-```
-
-That creates the `TodoDb` database if it does not exist and applies the migrations - there is
-no manual `CREATE DATABASE` step. In Development the app does the same thing on startup, so
-you can skip straight to running it; the explicit command is useful when you want the schema
-in place first, or when running outside Development where startup migration is disabled.
+The SDK is pinned to 10.0.302 in `global.json`, so the machine's newer .NET 11 preview SDK
+is ignored for this solution.
 
 ## Run it
 
@@ -44,32 +25,64 @@ Open <http://localhost:4200>. The Angular dev server proxies `/api` to the API
 does not come into it.
 
 - UI: <http://localhost:4200>
-- **Swagger UI: <http://localhost:5062/swagger>** - browse and call every endpoint
-- API: <http://localhost:5062> (redirects to Swagger UI in Development, `/health` elsewhere)
+- API: <http://localhost:5062>
 - OpenAPI document: <http://localhost:5062/openapi/v1.json>
 - Health: <http://localhost:5062/health>
 
-## Testing the API in the browser
+`src/TodoApi/TodoApi.http` has a ready-made request for every endpoint (VS Code REST Client,
+Visual Studio, or JetBrains Rider).
 
-<http://localhost:5062/swagger> lists all eight operations. Expand one, edit the request and
-press **Execute** - "Try it out" is already enabled, so there is no extra click per
-operation, and each response shows its duration.
+## The assistant
 
-Status and priority render as dropdowns of the real enum names, and only genuinely required
-fields are marked required (`title` for a create; `title`, `status` and `priority` for a
-full replace), so a minimal `{ "title": "..." }` create works straight from the page.
+A supervisor team of four agents, all in-process in the API (`src/TodoApi/Agents`):
 
-Swagger UI is Development-only. The document itself is produced by
-`Microsoft.AspNetCore.OpenApi`; `Swashbuckle.AspNetCore.SwaggerUI` supplies only the page,
-so there is no second document generator in the app.
+| Agent | Role | Tools |
+| ----- | ---- | ----- |
+| **Coordinator** | Routes each turn; holds no domain tools of its own | the three specialists |
+| **Scheduler** | Anything that *changes* items | create, set status, set priority, delete, list |
+| **Analyst** | Read-only questions, counts, what is overdue | list, statistics |
+| **Guide** | How the app and API work | retrieval over `Knowledge/*.md` |
 
-`src/TodoApi/TodoApi.http` has the same requests as a file, for VS Code REST Client, Visual
-Studio, or JetBrains Rider.
+The specialists are exposed to the coordinator as ordinary function tools, so routing is a
+normal tool call and the coordinator cannot, say, delete an item while "just answering a
+question". The reply shows which specialists ran.
+
+Every tool goes through the same `TodoService` the REST endpoints use, so an item created by
+chat is indistinguishable from one created by `POST /api/todos` - same defaults, same
+validation, same `completedAt` handling. When a turn changes anything the list refreshes
+itself; there is no polling.
+
+**RAG.** The Guide answers only from `src/TodoApi/Knowledge/*.md`, split one passage per
+`##` heading, embedded with `text-embedding-3-small` on first use and searched by cosine
+similarity in memory. The corpus is a few kilobytes, so this needs no vector database and no
+extra Azure resource. Edit the Markdown and restart to change what the Guide knows.
+
+### Configuring it
+
+The assistant needs an Azure AI Foundry endpoint and key. Keep them out of the repo:
+
+```bash
+cd src/TodoApi
+dotnet user-secrets set "Ai:Endpoint" "https://<your-resource>.services.ai.azure.com/"
+dotnet user-secrets set "Ai:ApiKey"   "<key>"
+```
+
+`Ai:ChatDeployment` defaults to `gpt-5-mini` and `Ai:EmbeddingDeployment` to
+`text-embedding-3-small`; override either in `appsettings.json` if your deployment names
+differ. Without these the API runs normally and only the chat panel reports itself
+unavailable - `GET /api/chat/status` says so, and the panel shows the reason.
+
+`POST /api/chat` takes `{ "message": "...", "conversationId": "..." }` and returns the reply,
+which agents ran, and the ids of anything changed. History is kept in memory per conversation
+and expires after two hours.
 
 ## Front end
 
 Angular 22, standalone components, zoneless change detection, signals throughout - no
-NgModules and no RxJS beyond the one `firstValueFrom` used for mutations.
+NgModules and no RxJS beyond the one `firstValueFrom` used for mutations. The palette is
+deliberately bright: a colour per priority and per status, carried consistently onto the
+badges, each row's left stripe, and the agent labels in chat. Every filled badge pairs its
+background with a foreground that clears WCAG AA, and the whole thing has a dark theme.
 
 `TodoStore` (`src/app/services/todo-store.ts`) is the whole state layer: a `filters` signal
 feeds an `httpResource`, so changing a filter refetches on its own, and mutations post
@@ -77,13 +90,10 @@ through `HttpClient` and then `reload()` that resource. `TodoList` is the only c
 markup - filter bar, inline composer, per-row status/priority selects, inline edit, and paging.
 
 ```bash
-npm start     --prefix src/todo-web   # dev server with the API proxy
-npm run build --prefix src/todo-web   # production bundle into dist/
-npm test      --prefix src/todo-web   # vitest; watches in a terminal
+npm start   --prefix src/todo-web    # dev server with the API proxy
+npm run build --prefix src/todo-web  # production bundle into dist/
+npm test    --prefix src/todo-web    # vitest, single run: npx ng test --watch=false
 ```
-
-From `src/todo-web`, `npx ng test --watch=false` runs the suite once and
-`npx ng test --watch=false --filter "renders a row"` runs a single test by name.
 
 If you serve the SPA from its own origin instead of using the proxy, the API allows the
 origins listed under `Cors:AllowedOrigins` in `appsettings.Development.json`
@@ -127,10 +137,6 @@ as a deliberate step. To start over: `dotnet ef database drop --project src/Todo
 
 Enums are sent and returned as **names**, not numbers. They are stored as their underlying
 int, so `sortBy=Priority` orders Low → Critical rather than alphabetically.
-
-Only `title` is required to create an item; `status` defaults to `Pending`, `priority` to
-`Medium`, and everything else is optional. A `PUT` is a full replacement, so it requires
-`title`, `status` and `priority`.
 
 ## Endpoints
 
@@ -204,9 +210,13 @@ src/TodoApi/                ASP.NET Core minimal API
   Endpoints/                Route group and handlers
   Infrastructure/           Maps bad request bodies to 400 problem details
   TodoApi.http              Sample requests
+  Agents/                   Agent team, tools, RAG index and AI options
+  Knowledge/                Markdown corpus the Guide agent retrieves from
+  Services/                 TodoService - the one implementation of every operation
 src/todo-web/               Angular 22 front end
   proxy.conf.json           Dev-server proxy for /api
   src/app/models/           Types mirroring the API contract
-  src/app/services/         TodoStore - filters, httpResource, mutations
+  src/app/services/         TodoStore and ChatStore
   src/app/todos/            The list component, template and styles
+  src/app/chat/             The assistant panel
 ```

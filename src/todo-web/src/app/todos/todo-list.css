@@ -10,6 +10,11 @@
 
 .toolbar {
   margin-bottom: 14px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
 }
 
 .search {
@@ -30,7 +35,7 @@
   padding: 14px;
   margin-bottom: 14px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 2px solid var(--accent);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
@@ -54,6 +59,11 @@
   color: var(--text-muted);
 }
 
+.summary strong {
+  color: var(--accent);
+  font-size: 14px;
+}
+
 .summary .overdue-count {
   color: var(--danger);
 }
@@ -71,6 +81,7 @@
   gap: 8px;
 }
 
+/* A colour stripe per priority, so the list reads as a heat map before you read a word. */
 .todo {
   display: flex;
   gap: 12px;
@@ -78,8 +89,32 @@
   padding: 12px 14px;
   background: var(--surface);
   border: 1px solid var(--border);
+  border-left: 6px solid var(--cancelled);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+  transition: border-color 0.12s ease, transform 0.06s ease;
+}
+
+.todo:hover {
+  border-color: var(--accent);
+}
+
+.todo[data-priority='Low'] {
+  border-left-color: var(--low);
+}
+.todo[data-priority='Medium'] {
+  border-left-color: var(--medium);
+}
+.todo[data-priority='High'] {
+  border-left-color: var(--high);
+}
+.todo[data-priority='Critical'] {
+  border-left-color: var(--critical);
+}
+
+.todo.done,
+.todo.dropped {
+  opacity: 0.72;
 }
 
 .todo.done .title,
@@ -124,8 +159,11 @@
 }
 
 .due.is-overdue {
-  color: var(--danger);
-  font-weight: 600;
+  color: var(--critical-fg);
+  background: var(--critical);
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-weight: 700;
 }
 
 .actions {

@@ -1,0 +1,69 @@
+<header class="chat-header">
+  <div>
+    <h2>Assistant</h2>
+    @if (status().model) {
+      <p class="model">{{ status().model }} · Scheduler · Analyst · Guide</p>
+    } @else {
+      <p class="model">Multi-agent assistant</p>
+    }
+  </div>
+  @if (!isEmpty()) {
+    <button type="button" class="ghost small" (click)="reset()">New chat</button>
+  }
+</header>
+
+@if (!available()) {
+  <p class="banner error">
+    {{ status().detail ?? 'The assistant is not available right now.' }}
+  </p>
+}
+
+<div class="transcript" #transcript>
+  @if (isEmpty()) {
+    <div class="intro">
+      <p>Ask about your list, or tell me what to change.</p>
+      <div class="suggestions">
+        @for (suggestion of suggestions; track suggestion) {
+          <button type="button" class="chip" [disabled]="!available() || sending()" (click)="useSuggestion(suggestion)">
+            {{ suggestion }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  @for (message of messages(); track $index) {
+    <div class="message" [class.from-user]="message.role === 'user'" [class.failed]="message.failed">
+      <p class="text">{{ message.text }}</p>
+      @if (message.agents?.length) {
+        <p class="agents">
+          @for (agent of message.agents; track agent) {
+            <span class="agent-badge" [attr.data-agent]="agent">{{ agent }}</span>
+          }
+        </p>
+      }
+    </div>
+  }
+
+  @if (sending()) {
+    <div class="message thinking" aria-live="polite">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+  }
+</div>
+
+<form class="composer" (submit)="$event.preventDefault(); send()">
+  <textarea
+    rows="2"
+    aria-label="Message the assistant"
+    placeholder="Ask or instruct…  (Enter to send)"
+    maxlength="2000"
+    [disabled]="!available()"
+    [value]="draft()"
+    (input)="draft.set($any($event.target).value)"
+    (keydown)="onKeydown($event)"
+  ></textarea>
+  <button type="submit" class="primary" [disabled]="!available() || sending() || !draft().trim()">
+    {{ sending() ? '…' : 'Send' }}
+  </button>
+</form>

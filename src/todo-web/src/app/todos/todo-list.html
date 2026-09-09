@@ -14,7 +14,7 @@
     <select [value]="filters().status" (change)="setStatusFilter($any($event.target).value)">
       <option value="">All</option>
       @for (status of statuses; track status) {
-        <option [value]="status">{{ status }}</option>
+        <option [value]="status" [selected]="status === filters().status">{{ status }}</option>
       }
     </select>
   </label>
@@ -24,7 +24,7 @@
     <select [value]="filters().minPriority" (change)="setMinPriorityFilter($any($event.target).value)">
       <option value="">Any</option>
       @for (priority of priorities; track priority) {
-        <option [value]="priority">{{ priority }}</option>
+        <option [value]="priority" [selected]="priority === filters().minPriority">{{ priority }}</option>
       }
     </select>
   </label>
@@ -33,7 +33,7 @@
     <span>Sort by</span>
     <select [value]="filters().sortBy" (change)="setSort($any($event.target).value)">
       @for (field of sortFields; track field) {
-        <option [value]="field">{{ field }}</option>
+        <option [value]="field" [selected]="field === filters().sortBy">{{ field }}</option>
       }
     </select>
   </label>
@@ -92,7 +92,7 @@
         <span>Status</span>
         <select [value]="draft().status" (change)="patchDraft({ status: $any($event.target).value })">
           @for (status of statuses; track status) {
-            <option [value]="status">{{ status }}</option>
+            <option [value]="status" [selected]="status === draft().status">{{ status }}</option>
           }
         </select>
       </label>
@@ -104,7 +104,7 @@
           (change)="patchDraft({ priority: $any($event.target).value })"
         >
           @for (priority of priorities; track priority) {
-            <option [value]="priority">{{ priority }}</option>
+            <option [value]="priority" [selected]="priority === draft().priority">{{ priority }}</option>
           }
         </select>
       </label>
@@ -145,7 +145,12 @@
 
 <ul class="todo-list">
   @for (todo of todos(); track todo.id) {
-    <li class="todo" [class.done]="todo.status === 'Completed'" [class.dropped]="todo.status === 'Cancelled'">
+    <li
+      class="todo"
+      [attr.data-priority]="todo.priority"
+      [class.done]="todo.status === 'Completed'"
+      [class.dropped]="todo.status === 'Cancelled'"
+    >
       @if (editingId() === todo.id) {
         <form class="edit" (submit)="$event.preventDefault(); saveEdit(todo.id)">
           <input
@@ -172,7 +177,7 @@
                 (change)="patchEditDraft({ status: $any($event.target).value })"
               >
                 @for (status of statuses; track status) {
-                  <option [value]="status">{{ status }}</option>
+                  <option [value]="status" [selected]="status === editDraft().status">{{ status }}</option>
                 }
               </select>
             </label>
@@ -183,7 +188,7 @@
                 (change)="patchEditDraft({ priority: $any($event.target).value })"
               >
                 @for (priority of priorities; track priority) {
-                  <option [value]="priority">{{ priority }}</option>
+                  <option [value]="priority" [selected]="priority === editDraft().priority">{{ priority }}</option>
                 }
               </select>
             </label>
@@ -234,7 +239,7 @@
             (change)="setStatus(todo, $any($event.target).value)"
           >
             @for (status of statuses; track status) {
-              <option [value]="status">{{ status }}</option>
+              <option [value]="status" [selected]="status === todo.status">{{ status }}</option>
             }
           </select>
           <select
@@ -243,7 +248,7 @@
             (change)="setPriority(todo, $any($event.target).value)"
           >
             @for (priority of priorities; track priority) {
-              <option [value]="priority">{{ priority }}</option>
+              <option [value]="priority" [selected]="priority === todo.priority">{{ priority }}</option>
             }
           </select>
           <button type="button" class="ghost" (click)="startEdit(todo)">Edit</button>

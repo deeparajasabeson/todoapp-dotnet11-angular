@@ -1,45 +1,87 @@
-/* Design tokens and shared element styles. Component-scoped rules that only
-   concern the list itself live in todo-list.css. */
+/* Design tokens and shared element styles. Component-scoped rules that only concern the
+   list or the chat live in their own component stylesheets.
+
+   The palette is deliberately saturated. Every filled badge pairs a bright background with
+   a foreground chosen to clear WCAG AA (4.5:1) against it, so "bright" does not cost
+   legibility - amber takes near-black text, the darker hues take white. */
 :root {
   color-scheme: light dark;
 
-  --bg: #f6f7f9;
+  --bg: #f2f5ff;
+  --bg-accent: radial-gradient(1200px 500px at 10% -10%, #dbe4ff 0%, transparent 60%),
+    radial-gradient(900px 400px at 100% 0%, #ffe3f1 0%, transparent 55%);
   --surface: #ffffff;
-  --surface-2: #f0f2f5;
-  --border: #dfe3e8;
-  --text: #16191d;
-  --text-muted: #626b76;
-  --accent: #2f6feb;
+  --surface-2: #eef1fb;
+  --border: #d3d9ee;
+  --text: #14162b;
+  --text-muted: #5a6183;
+
+  --accent: #4338ca;
+  --accent-strong: #3730a3;
   --accent-text: #ffffff;
-  --danger: #c02b2b;
+  --accent-soft: #e0e7ff;
+  --danger: #be123c;
 
-  --low: #6b7280;
-  --medium: #2f6feb;
-  --high: #b45309;
-  --critical: #c02b2b;
+  /* Priority ramp: cool and calm at Low, hot and loud at Critical. */
+  --low: #0f766e;
+  --low-fg: #ffffff;
+  --medium: #1d4ed8;
+  --medium-fg: #ffffff;
+  --high: #fbbf24;
+  --high-fg: #23180a;
+  --critical: #e11d48;
+  --critical-fg: #ffffff;
 
-  --radius: 8px;
-  --shadow: 0 1px 2px rgb(16 24 40 / 6%), 0 1px 3px rgb(16 24 40 / 8%);
+  /* Status hues, deliberately distinct from the priority ramp. */
+  --pending: #6d28d9;
+  --pending-fg: #ffffff;
+  --inprogress: #0e7490;
+  --inprogress-fg: #ffffff;
+  --completed: #047857;
+  --completed-fg: #ffffff;
+  --cancelled: #64748b;
+  --cancelled-fg: #ffffff;
+
+  --radius: 10px;
+  --shadow: 0 1px 2px rgb(20 22 43 / 6%), 0 6px 16px -8px rgb(20 22 43 / 18%);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #14171a;
-    --surface: #1c2024;
-    --surface-2: #23282e;
-    --border: #333a42;
-    --text: #e8eaed;
-    --text-muted: #9aa4b0;
-    --accent: #6ea0ff;
-    --accent-text: #10131a;
-    --danger: #ff6b6b;
+    --bg: #0d1020;
+    --bg-accent: radial-gradient(1100px 460px at 5% -10%, #1d2450 0%, transparent 60%),
+      radial-gradient(800px 380px at 100% 0%, #3a1533 0%, transparent 55%);
+    --surface: #171b31;
+    --surface-2: #202641;
+    --border: #333b60;
+    --text: #eef0fa;
+    --text-muted: #a2abd0;
 
-    --low: #9aa4b0;
-    --medium: #6ea0ff;
-    --high: #e0a25e;
-    --critical: #ff6b6b;
+    --accent: #818cf8;
+    --accent-strong: #a5b4fc;
+    --accent-text: #10132a;
+    --accent-soft: #262e58;
+    --danger: #fb7185;
 
-    --shadow: 0 1px 2px rgb(0 0 0 / 40%);
+    --low: #2dd4bf;
+    --low-fg: #04231f;
+    --medium: #60a5fa;
+    --medium-fg: #06152e;
+    --high: #fcd34d;
+    --high-fg: #241a05;
+    --critical: #fb7185;
+    --critical-fg: #2b0710;
+
+    --pending: #c4b5fd;
+    --pending-fg: #1b1035;
+    --inprogress: #67e8f9;
+    --inprogress-fg: #04222a;
+    --completed: #6ee7b7;
+    --completed-fg: #032117;
+    --cancelled: #a3aec8;
+    --cancelled-fg: #131728;
+
+    --shadow: 0 1px 2px rgb(0 0 0 / 45%), 0 8px 20px -10px rgb(0 0 0 / 70%);
   }
 }
 
@@ -49,7 +91,9 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: var(--bg-accent);
+  background-attachment: fixed;
   color: var(--text);
   font:
     15px/1.5 system-ui,
@@ -74,7 +118,7 @@ select,
 textarea {
   padding: 6px 9px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--surface);
   min-width: 0;
 }
@@ -89,31 +133,37 @@ select:focus-visible,
 textarea:focus-visible,
 button:focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 button {
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 6px 12px;
   border: 1px solid var(--border);
   background: var(--surface);
+  transition: transform 0.06s ease, background-color 0.12s ease, border-color 0.12s ease;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 button:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 button.primary {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  border-color: transparent;
   color: var(--accent-text);
-  font-weight: 600;
+  font-weight: 650;
 }
 
 button.ghost:hover:not(:disabled) {
-  background: var(--surface-2);
+  background: var(--accent-soft);
+  border-color: var(--accent);
 }
 
 button.danger {
@@ -121,19 +171,28 @@ button.danger {
   border-color: transparent;
 }
 
+button.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  border-color: var(--danger);
+}
+
 button.link {
   border: none;
   background: none;
   color: var(--accent);
   padding: 0 2px;
+  font-weight: 600;
   text-decoration: underline;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  font-size: 12px;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   color: var(--text-muted);
 }
 
@@ -145,37 +204,49 @@ button.link {
   color: var(--text-muted);
 }
 
+/* Filled, not outlined: at badge size a solid block of colour is far easier to scan. */
 .badge {
   display: inline-block;
-  padding: 1px 8px;
+  padding: 2px 9px;
   border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid currentcolor;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: none;
 }
 
 .priority-low {
-  color: var(--low);
+  background: var(--low);
+  color: var(--low-fg);
 }
 .priority-medium {
-  color: var(--medium);
+  background: var(--medium);
+  color: var(--medium-fg);
 }
 .priority-high {
-  color: var(--high);
+  background: var(--high);
+  color: var(--high-fg);
 }
 .priority-critical {
-  color: var(--critical);
+  background: var(--critical);
+  color: var(--critical-fg);
 }
 
-.status-pending,
-.status-cancelled {
-  color: var(--text-muted);
+.status-pending {
+  background: var(--pending);
+  color: var(--pending-fg);
 }
 .status-inprogress {
-  color: var(--accent);
+  background: var(--inprogress);
+  color: var(--inprogress-fg);
 }
 .status-completed {
-  color: #2e7d4f;
+  background: var(--completed);
+  color: var(--completed-fg);
+}
+.status-cancelled {
+  background: var(--cancelled);
+  color: var(--cancelled-fg);
 }
 
 .banner {
@@ -183,6 +254,8 @@ button.link {
   padding: 9px 12px;
   border-radius: var(--radius);
   border: 1px solid var(--danger);
+  border-left-width: 5px;
   color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+  font-weight: 550;
 }

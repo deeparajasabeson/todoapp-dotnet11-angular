@@ -54,6 +54,14 @@ export class TodoStore {
     this.page.error() ? 'Could not reach the API. Is it running on port 5062?' : null,
   );
 
+  /**
+   * Re-runs the current query. The chat assistant writes through the same API, so the list
+   * calls this after a turn that changed anything rather than polling.
+   */
+  refresh(): void {
+    this.page.reload();
+  }
+
   /** Any filter change resets to page 1 - staying on page 4 of a new filter is never useful. */
   patchFilters(changes: Partial<TodoFilters>): void {
     this.filters.update((current) => ({ ...current, ...changes, page: changes.page ?? 1 }));
