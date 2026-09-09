@@ -1,9 +1,7 @@
 Todo app
 ** Built an ASP.NET Core Minimal API on .NET 10  "Todo app" with Database in SQL Server localhost instance, Angular 22 UI, and an Azure Foundry multi-agent chat panel; all of it works**
 
-A to-do list with an **ASP.NET Core minimal API on .NET 10** backed by SQL Server, an
-**Angular 22** front end, and a **multi-agent assistant** built on the Microsoft Agent
-Framework against **Azure AI Foundry**. Items carry a **status** and a **priority**, and the
+Todo items carry a **status** and a **priority**, and the
 list filters, sorts and pages on both.
 =======
 Frontend :
