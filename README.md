@@ -1,4 +1,10 @@
 # Todo app
+Frontend :
+  <img width="2840" height="2012" alt="image" src="https://github.com/user-attachments/assets/8211141d-5f44-4fd2-9a5c-e7baf1ce91a9" />
+
+Backend :
+  <img width="3745" height="1870" alt="image" src="https://github.com/user-attachments/assets/271eff50-d1f9-477d-b445-0730b7ab8964" />
+  <img width="780" height="310" alt="image" src="https://github.com/user-attachments/assets/c5ef787c-019a-4b7d-8a54-3f7c9b4c807c" />
 
 A to-do list with an **ASP.NET Core minimal API on .NET 10** backed by SQL Server, and an
 **Angular 22** front end. Items carry a **status** and a **priority**, and the list filters,
