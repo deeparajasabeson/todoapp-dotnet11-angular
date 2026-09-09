@@ -1,8 +1,6 @@
 Todo app
 ** Built an ASP.NET Core Minimal API on .NET 10  "Todo app" with Database in SQL Server localhost instance, Angular 22 UI, and an Azure Foundry multi-agent chat panel; all of it works**
-
-Todo items carry a **status** and a **priority**, and the
-list filters, sorts and pages on both.
+Todo items carry a status and priority and the list filters, sorts and pages on both
 =======
 Frontend :
   <img width="1637" height="992" alt="image" src="https://github.com/user-attachments/assets/edbb6bbd-f5c9-4e46-a699-43f1a0b5ca1b" />
