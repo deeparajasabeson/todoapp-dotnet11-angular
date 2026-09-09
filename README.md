@@ -1,9 +1,21 @@
 # Todo app
+<<<<<<< HEAD
 ![Front End Home Page at http://localhost:4200](image.png)
 A to-do list with an **ASP.NET Core minimal API on .NET 10** backed by SQL Server, an
 **Angular 22** front end, and a **multi-agent assistant** built on the Microsoft Agent
 Framework against **Azure AI Foundry**. Items carry a **status** and a **priority**, and the
 list filters, sorts and pages on both.
+=======
+Frontend :
+  <img width="1637" height="992" alt="image" src="https://github.com/user-attachments/assets/edbb6bbd-f5c9-4e46-a699-43f1a0b5ca1b" />
+
+Backend :
+  <img width="3745" height="1870" alt="image" src="https://github.com/user-attachments/assets/271eff50-d1f9-477d-b445-0730b7ab8964" />
+  <img width="780" height="310" alt="image" src="https://github.com/user-attachments/assets/c5ef787c-019a-4b7d-8a54-3f7c9b4c807c" />
+
+Sql Server :
+  <img width="3795" height="1602" alt="image" src="https://github.com/user-attachments/assets/4d0bb279-021e-4f16-835b-f5b797e80828" />
+>>>>>>> 798b30c380c99b8d902aa1d3fb00b6b552ad0b25
 
 The home screen is the list on the left two thirds and the assistant on the right third.
 Anything you can do by clicking, you can also ask for in plain English.
