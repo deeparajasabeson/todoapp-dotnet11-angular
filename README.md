@@ -6,6 +6,7 @@ list filters, sorts and pages on both.
 =======
 Frontend :
   <img width="1637" height="992" alt="image" src="https://github.com/user-attachments/assets/edbb6bbd-f5c9-4e46-a699-43f1a0b5ca1b" />
+  <img width="1565" height="990" alt="image" src="https://github.com/user-attachments/assets/37f6038f-9e3b-4cc6-b8b9-caff13af3834" />
 
 Backend :
   <img width="3745" height="1870" alt="image" src="https://github.com/user-attachments/assets/271eff50-d1f9-477d-b445-0730b7ab8964" />
