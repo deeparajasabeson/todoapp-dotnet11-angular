@@ -1,6 +1,25 @@
 Built an ASP.NET Core Minimal API on .NET 10  "Todo app" with Database in SQL Server localhost instance, Angular 22 UI, and an Azure Foundry multi-agent chat panel; all of it works.
 Todo items carry a status and priority and the list filters, sorts and pages on both
 =======
+Built a to-do list application with three layers.
+
+**What a user does with it ::**
+Track tasks that each have a status (Pending → InProgress → Completed, or Cancelled) and a priority (Low → Medium → High → Critical), plus optional notes and a due date. The home screen is the list on the left two thirds and a chat assistant on the right third. You can work either way — click through the list, or type "add a high priority task to renew my passport, due next Friday" and it appears.
+
+The three pieces
+
+- src/TodoApi — ASP.NET Core minimal API on .NET 10, backed by SQL Server (TodoDb) via EF Core. Eight REST operations: list, get, create, replace, delete, plus separate PATCH endpoints for status and priority, since those are the two edits people actually make. The list endpoint filters by status/priority/search/overdue, sorts on six fields, and pages — all pushed down to SQL, never filtered in memory. Bodies are validated with FluentValidation; every failure comes back as RFC 9457 problem details. Swagger UI at /swagger for trying it by hand.
+  
+- src/todo-web — Angular 22: standalone components, zoneless, signals throughout. The list has filters, an inline composer, per-row status/priority dropdowns, inline editing, and paging. Bright colour system where each priority and status owns a hue, carried onto badges, each row's left stripe, and the chat's agent labels.
+  
+- The assistant — a four-agent team on the Microsoft Agent Framework, calling Azure AI Foundry gpt-5-mini deployment. A Coordinator holding no domain tools routes each turn to a Scheduler (changes items), an Analyst (reads, counts, what's overdue), or a Guide (answers how the app works, via embedding-based retrieval over a small Markdown corpus). The reply badges which specialists ran.
+
+The idea that ties it together
+
+Everything funnels through one TodoService. 
+The REST endpoints call it, and so do the agent's tools — so an item created by chat is indistinguishable from one created by POST /api/todos: same defaults, same validation, same CompletedAt handling. The agents can't bypass a rule the API enforces, and when a chat turn changes something the list just re-reads rather than polling.
+
+It walks a fairly complete modern .NET + Angular + AI stack end to end.
 Frontend :
   <img width="1637" height="992" alt="image" src="https://github.com/user-attachments/assets/edbb6bbd-f5c9-4e46-a699-43f1a0b5ca1b" />
   <img width="1565" height="990" alt="image" src="https://github.com/user-attachments/assets/37f6038f-9e3b-4cc6-b8b9-caff13af3834" />
